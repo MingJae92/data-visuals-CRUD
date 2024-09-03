@@ -12,12 +12,24 @@ import {
   Alert,
   Typography,
   Box,
+  IconButton,
+  TextField,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 
 function Page() {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editItem, setEditItem] = useState(null);
+  const [open, setOpen] = useState(false);
 
   const dataUrl = "https://fakestoreapi.com/products";
 
@@ -27,14 +39,11 @@ function Page() {
         const response = await axios.get(dataUrl);
 
         if (response.status === 200) {
-          console.log("Data is fetched");
-          console.log("API Response:", response.data);
           setTableData(response.data);
         }
 
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching data:", error);
         setError("Failed to fetch data");
         setLoading(false);
       }
@@ -42,6 +51,51 @@ function Page() {
 
     getTableData();
   }, []);
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${dataUrl}/${id}`);
+      setTableData((prevData) => prevData.filter((item) => item.id !== id));
+    } catch (error) {
+      setError("Failed to delete item");
+    }
+  };
+
+  const handleEditClick = (item) => {
+    setEditItem(item);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setEditItem(null);
+  };
+
+  const handleSave = async () => {
+    try {
+      const response = await axios.put(`${dataUrl}/${editItem.id}`, editItem);
+
+      if (response.status === 200) {
+        setTableData((prevData) =>
+          prevData.map((item) =>
+            item.id === editItem.id ? { ...item, ...editItem } : item
+          )
+        );
+        setOpen(false);
+        setEditItem(null);
+      }
+    } catch (error) {
+      setError("Failed to update item");
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditItem((prevItem) => ({
+      ...prevItem,
+      [name]: value,
+    }));
+  };
 
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
@@ -60,6 +114,7 @@ function Page() {
               <TableCell>Description</TableCell>
               <TableCell>Price</TableCell>
               <TableCell>Rating</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -72,11 +127,72 @@ function Page() {
                 <TableCell>
                   {item.rating?.rate} (Count: {item.rating?.count})
                 </TableCell>
+                <TableCell>
+                  <IconButton
+                    color="primary"
+                    onClick={() => handleEditClick(item)}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    color="secondary"
+                    onClick={() => handleDelete(item.id)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Edit Item</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Please edit the fields below and click "Save" to update the item.
+          </DialogContentText>
+          <TextField
+            margin="dense"
+            label="Title"
+            name="title"
+            value={editItem?.title || ""}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            margin="dense"
+            label="Category"
+            name="category"
+            value={editItem?.category || ""}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            margin="dense"
+            label="Description"
+            name="description"
+            value={editItem?.description || ""}
+            onChange={handleChange}
+            fullWidth
+          />
+          <TextField
+            margin="dense"
+            label="Price"
+            name="price"
+            value={editItem?.price || ""}
+            onChange={handleChange}
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleSave} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
