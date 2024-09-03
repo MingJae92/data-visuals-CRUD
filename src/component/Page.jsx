@@ -29,7 +29,7 @@ function Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editItem, setEditItem] = useState(null);
-  const [open, setOpen] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   const dataUrl = "https://fakestoreapi.com/products";
 
@@ -63,11 +63,11 @@ function Page() {
 
   const handleEditClick = (item) => {
     setEditItem(item);
-    setOpen(true);
+    setOpenModal(true);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setOpenModal(false);
     setEditItem(null);
   };
 
@@ -81,8 +81,7 @@ function Page() {
             item.id === editItem.id ? { ...item, ...editItem } : item
           )
         );
-        setOpen(false);
-        setEditItem(null);
+        handleClose();
       }
     } catch (error) {
       setError("Failed to update item");
@@ -147,7 +146,7 @@ function Page() {
         </Table>
       </TableContainer>
 
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog open={openModal} onClose={handleClose}>
         <DialogTitle>Edit Item</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -181,6 +180,7 @@ function Page() {
             margin="dense"
             label="Price"
             name="price"
+            type="number"
             value={editItem?.price || ""}
             onChange={handleChange}
             fullWidth
