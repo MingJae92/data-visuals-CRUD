@@ -113,6 +113,7 @@ function Page() {
               <TableCell>Description</TableCell>
               <TableCell>Price</TableCell>
               <TableCell>Rating</TableCell>
+              <TableCell>Count</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -123,9 +124,8 @@ function Page() {
                 <TableCell>{item.category}</TableCell>
                 <TableCell>{item.description}</TableCell>
                 <TableCell>${item.price}</TableCell>
-                <TableCell>
-                  {item.rating?.rate} (Count: {item.rating?.count})
-                </TableCell>
+                <TableCell>{item.rating?.rate}</TableCell>
+                <TableCell>{item.rating?.count}</TableCell>
                 <TableCell>
                   <IconButton
                     color="primary"
